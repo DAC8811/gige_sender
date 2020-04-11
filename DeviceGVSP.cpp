@@ -110,7 +110,7 @@ ThreadReturnType MV_STDCALL DeviceGVSP::HandlingStreamPacket(void* Arg)
     Device::virtual_addr_t pStreamBuffer = NULL;
     size_t nStreamSize;
 	size_t nPerDataSize;
-    uint32_t nSizeX, nSizeY;
+    uint32_t nSizeX, nSizeY,depth;
     uint32_t nLen;
     stringstream ss;
 
@@ -151,7 +151,8 @@ ThreadReturnType MV_STDCALL DeviceGVSP::HandlingStreamPacket(void* Arg)
                 //return nRet;
                 continue;
             }
-            pDeviceGvsp->_pStrm->GetImageData(pStreamBuffer, nStreamSize, nSizeX, nSizeY);
+            pDeviceGvsp->_pStrm->GetImageData(pStreamBuffer, nStreamSize, nSizeX, nSizeY,depth);
+
             if (pStreamBuffer == NULL)
             {
                 cout << "[WARN]";
@@ -166,9 +167,8 @@ ThreadReturnType MV_STDCALL DeviceGVSP::HandlingStreamPacket(void* Arg)
 
             // Data Leader
             pDeviceGvsp->_nPacketId = 0;
-//            nLen = pDeviceGvsp->PacketLeader(nSizeX, nSizeY); GVSP_PT_FILE
 //            nLen = pDeviceGvsp->PacketLeader(nSizeX, nSizeY,GVSP_PT_FILE);
-            nLen = pDeviceGvsp->PacketLeader(800, 600,GVSP_PT_FILE,0x00180000);
+            nLen = pDeviceGvsp->PacketLeader(nSizeX, nSizeY,GVSP_PT_FILE,depth);
             try
             {
                 pDeviceGvsp->_UdpSkt.Send(pDeviceGvsp->_Host, pDeviceGvsp->_cGvspPacket, nLen);
@@ -290,6 +290,7 @@ uint32_t DeviceGVSP::PacketPayload(Device::virtual_addr_t pCurData, size_t nData
 
     char* pDataPayload = _cGvspPacket + sizeof(GVSP_PACKET_HEADER);
     memcpy(pDataPayload, pCurData, nDataSize);
+
 
     return (sizeof(GVSP_PACKET_HEADER) + nDataSize);
 }

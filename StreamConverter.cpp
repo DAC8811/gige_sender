@@ -7,6 +7,7 @@
 #include <fstream>
 #include <opencv2/opencv.hpp>
 
+
 using namespace std;
 
 StreamConverter::StreamConverter(const std::string strDirName)
@@ -29,6 +30,7 @@ StreamConverter::StreamConverter(const std::string strDirName)
     _nImageLen     = 0;
     _nSizeX        = 0;
     _nSizeY        = 0;
+    _depth		   = 0;
 }
 
 StreamConverter::~StreamConverter()
@@ -155,100 +157,126 @@ int StreamConverter::GetNextFrame(string& strFileName, PixelFormats OutFmt)
     return nRet;
 }
 
-void StreamConverter::GetImageData(Device::virtual_addr_t& pData, size_t& nLen, uint32_t& nSizeX, uint32_t& nSizeY)
+void StreamConverter::GetImageData(Device::virtual_addr_t& pData, size_t& nLen, uint32_t& nSizeX, uint32_t& nSizeY,uint32_t& depth)
 {
     pData  = _pImageData;
     nLen   = _nImageLen;
     nSizeX = _nSizeX;
     nSizeY = _nSizeY;
+    depth  = _depth;
 }
 
-int StreamConverter::UpdateImageData()
+//int StreamConverter::UpdateImageData()
+//{
+//    int nRet = MV_OK;
+//
+//    fstream file;
+//
+//    file.open(_strCurFileName.c_str(), ios::in | ios::binary);
+//
+//    if (file.is_open())
+//    {
+//        file.seekg(0, ios::end);
+//        _nImageLen = file.tellg();
+//        file.seekg(0, ios::beg);
+//        if (_nImageLen <= IMAGE_FILE_MAX_SIZE)
+//        {
+//            file.read((char*)_pImageData, _nImageLen);
+//            file.close();
+//        }
+//        else
+//        {
+//            _nImageLen = 0;
+//            _pImageData = NULL;
+//            _nSizeX = _nSizeY = 0;
+//            return -1;
+//        }
+//
+//
+//        // TODO: OutFmt == MV_GVSP_PIX_MONO8
+//        // RAW File
+//        if (_strCurFileName.substr(_strCurFileName.length() - 4, 4) == string(".raw"))
+//        {
+//            // TODO:
+//            _nSizeX = 1920;
+//            _nSizeY = 1440;
+//
+//            return nRet;
+//        }
+//
+//        /*
+//
+//        // NOT RAW
+//        FREE_IMAGE_FORMAT fiFormat;
+//        FIBITMAP *inImage;
+//        uint32_t nBpp = 0;
+//
+//        // attach the binary data to a memory stream
+//        FIMEMORY *hmem = FreeImage_OpenMemory((BYTE*)_pImageMem, nFileSize);
+//
+//        // get the file type
+//        fiFormat = FreeImage_GetFileTypeFromMemory(hmem, 0);
+//        if (fiFormat == FIF_UNKNOWN)
+//        {
+//        nLen = 0;
+//        pData = NULL;
+//        nSizeX = nSizeY = 0;
+//        return -1;
+//        }
+//        else if (fiFormat == FIF_JPEG || fiFormat == FIF_PNG || fiFormat == FIF_BMP)
+//        {
+//        // RGB
+//        // load an image from the memory stream
+//        inImage = FreeImage_LoadFromMemory(fiFormat, hmem, 0);
+//
+//        // operate as a regular file
+//        nBpp = FreeImage_GetBPP(inImage);
+//        nSizeX = FreeImage_GetWidth(inImage);
+//        nSizeY = FreeImage_GetHeight(inImage);
+//
+//        // TODO:
+//        FreeImage_Unload(inImage);
+//        }
+//
+//        // always close the memory stream
+//        FreeImage_CloseMemory(hmem);
+//
+//        */
+//    }
+//    else
+//    {
+//        _nImageLen = 0;
+//        _pImageData = NULL;
+//        _nSizeX = _nSizeY = 0;
+//        return -1;
+//    }
+//
+//    return nRet;
+//}
+
+int StreamConverter::UpdateImageData()//rewrite the fun updateimagedata with opencv lib
 {
-    int nRet = MV_OK;
+	int nRet = MV_OK;
 
-    fstream file;
+	_file = cv::imread(_strCurFileName.c_str());
+	if(!_file.empty())
+	{
+		_pImageData = _file.data;
+		_nSizeX = _file.cols;
+		_nSizeY = _file.rows;
+		_depth = _file.elemSize();
+		_nImageLen = _nSizeX*_nSizeY*_depth;
 
-    file.open(_strCurFileName.c_str(), ios::in | ios::binary);
+	}
+	else
+	{
+		_nImageLen = 0;
+		_pImageData = NULL;
+		_nSizeX = _nSizeY = 0;
+		return -1;
+	}
 
-    if (file.is_open())
-    {
-        file.seekg(0, ios::end);
-        _nImageLen = file.tellg();
-        file.seekg(0, ios::beg);
-        if (_nImageLen <= IMAGE_FILE_MAX_SIZE)
-        {
-            file.read((char*)_pImageData, _nImageLen);
-            file.close();
-        }
-        else
-        {
-            _nImageLen = 0;
-            _pImageData = NULL;
-            _nSizeX = _nSizeY = 0;
-            return -1;
-        }
-
-
-        // TODO: OutFmt == MV_GVSP_PIX_MONO8
-        // RAW File
-        if (_strCurFileName.substr(_strCurFileName.length() - 4, 4) == string(".raw"))
-        {
-            // TODO:
-            _nSizeX = 1920;
-            _nSizeY = 1440;
-
-            return nRet;
-        }
-
-        /*
-
-        // NOT RAW
-        FREE_IMAGE_FORMAT fiFormat;
-        FIBITMAP *inImage;
-        uint32_t nBpp = 0;
-
-        // attach the binary data to a memory stream
-        FIMEMORY *hmem = FreeImage_OpenMemory((BYTE*)_pImageMem, nFileSize);
-
-        // get the file type
-        fiFormat = FreeImage_GetFileTypeFromMemory(hmem, 0);
-        if (fiFormat == FIF_UNKNOWN)
-        {
-        nLen = 0;
-        pData = NULL;
-        nSizeX = nSizeY = 0;
-        return -1;
-        }
-        else if (fiFormat == FIF_JPEG || fiFormat == FIF_PNG || fiFormat == FIF_BMP)
-        {
-        // RGB
-        // load an image from the memory stream
-        inImage = FreeImage_LoadFromMemory(fiFormat, hmem, 0);
-
-        // operate as a regular file
-        nBpp = FreeImage_GetBPP(inImage);
-        nSizeX = FreeImage_GetWidth(inImage);
-        nSizeY = FreeImage_GetHeight(inImage);
-
-        // TODO:
-        FreeImage_Unload(inImage);
-        }
-
-        // always close the memory stream
-        FreeImage_CloseMemory(hmem);
-
-        */
-    }
-    else
-    {
-        _nImageLen = 0;
-        _pImageData = NULL;
-        _nSizeX = _nSizeY = 0;
-        return -1;
-    }
-
-    return nRet;
+	return nRet;
 }
 
 void StreamConverter::Lock()
