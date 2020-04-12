@@ -36,6 +36,7 @@
 #include "Inc/MV_CrossPlatform.h"
 
 #include "Device.h"
+#include <opencv2/opencv.hpp>
 
 class StreamConverter
 {
@@ -50,7 +51,7 @@ class StreamConverter
     int DeInit();
 
     int GetNextFrame(std::string& strFileName, PixelFormats OutFmt = MV_GVSP_PIX_MONO8);
-    void GetImageData(Device::virtual_addr_t& pData, size_t& nLen, uint32_t& nSizeX, uint32_t& nSizeY);
+    void GetImageData(Device::virtual_addr_t& pData, size_t& nLen, uint32_t& nSizeX, uint32_t& nSizeY,uint32_t& depth);
     void Lock();
     void Unlock();
 
@@ -75,10 +76,15 @@ class StreamConverter
 //    CMVMutex       _BufMutex;
     pthread_mutex_t _BufMutex;
     unsigned char* _pStreamBuffer;
-    unsigned char* _pImageData;
+
     size_t         _nImageLen;
     uint32_t       _nSizeX;
     uint32_t       _nSizeY;
+    uint32_t	   _depth;
+
+  public:
+    unsigned char* _pImageData;
+    cv::Mat _file;
 };
 
 

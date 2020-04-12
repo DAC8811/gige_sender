@@ -267,6 +267,7 @@ int StreamConverter::UpdateImageData()//rewrite the fun updateimagedata with ope
 		_depth = _file.elemSize();
 		_nImageLen = _nSizeX*_nSizeY*_depth;
 
+
 	}
 	else
 	{

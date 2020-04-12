@@ -1,6 +1,7 @@
 // -*- coding: gb2312-dos -*-
 #include <sstream>
 #include "DeviceGVSP.h"
+#include <opencv2/opencv.hpp>
 
 using namespace std;
 using namespace MVComponent;
@@ -217,7 +218,7 @@ ThreadReturnType MV_STDCALL DeviceGVSP::HandlingStreamPacket(void* Arg)
 
                 // Waiting
                 // Sleep(pDeviceGvsp->_nPacketDelay);
-				// Sleep(2);
+				 usleep(2*100);
             }
             pDeviceGvsp->_pStrm->Unlock();
             // Exit StreamConverter buffer
