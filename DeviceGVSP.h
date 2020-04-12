@@ -59,7 +59,7 @@ class DeviceGVSP
     int Start();
     uint32_t PacketLeader(uint32_t nSizeX, uint32_t nSizeY,
                           GVSP_PACKET_PAYLOAD_TYPE PayloadType = GVSP_PT_UNCOMPRESSED_IMAGE,
-                          int nPixelFmt = MV_GVSP_PIX_MONO8);
+                          int nPixelFmt = MV_GVSP_PIX_MONO8,int type = 0);
     uint32_t PacketPayload(Device::virtual_addr_t pCurData, size_t nDataSize);
     uint32_t PacketTrailer(uint32_t nSizeY, GVSP_PACKET_PAYLOAD_TYPE PayloadType = GVSP_PT_UNCOMPRESSED_IMAGE);
 

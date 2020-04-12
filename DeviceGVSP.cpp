@@ -169,7 +169,7 @@ ThreadReturnType MV_STDCALL DeviceGVSP::HandlingStreamPacket(void* Arg)
             // Data Leader
             pDeviceGvsp->_nPacketId = 0;
 //            nLen = pDeviceGvsp->PacketLeader(nSizeX, nSizeY,GVSP_PT_FILE);
-            nLen = pDeviceGvsp->PacketLeader(nSizeX, nSizeY,GVSP_PT_FILE,depth);
+            nLen = pDeviceGvsp->PacketLeader(nSizeX, nSizeY,GVSP_PT_FILE,depth,pDeviceGvsp->_pStrm->_file.type());
             try
             {
                 pDeviceGvsp->_UdpSkt.Send(pDeviceGvsp->_Host, pDeviceGvsp->_cGvspPacket, nLen);
@@ -258,7 +258,7 @@ ThreadReturnType MV_STDCALL DeviceGVSP::HandlingStreamPacket(void* Arg)
     return NULL;
 }
 
-uint32_t DeviceGVSP::PacketLeader(uint32_t nSizeX, uint32_t nSizeY, GVSP_PACKET_PAYLOAD_TYPE PayloadType, int nPixelFmt)
+uint32_t DeviceGVSP::PacketLeader(uint32_t nSizeX, uint32_t nSizeY, GVSP_PACKET_PAYLOAD_TYPE PayloadType, int nPixelFmt,int type)
 {
     GVSP_PACKET_HEADER* pHeader = (GVSP_PACKET_HEADER*) (_cGvspPacket);
     pHeader->status        = htons(MV_GEV_STATUS_SUCCESS);
@@ -273,7 +273,7 @@ uint32_t DeviceGVSP::PacketLeader(uint32_t nSizeX, uint32_t nSizeY, GVSP_PACKET_
     pDataLeader->pixel_format   = htonl(nPixelFmt); // TODO
     pDataLeader->size_x         = htonl(nSizeX);
     pDataLeader->size_y         = htonl(nSizeY);
-    pDataLeader->offset_x       = htonl(0);  // TODO
+    pDataLeader->offset_x       = htonl(type);  // TODO
     pDataLeader->offset_y       = htonl(0);
     pDataLeader->padding_x      = htons(0);
     pDataLeader->padding_y      = htons(0);
