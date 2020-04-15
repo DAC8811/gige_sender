@@ -222,6 +222,7 @@ int VirtualDevice::InitVtMem()
     SetReg((virtual_addr_t)MV_REG_TimestampTickFrequencyHigh, 0);
     SetReg((virtual_addr_t)MV_REG_TimestampTickFrequencyLow, 1000000000);
     SetReg((virtual_addr_t)MV_REG_StreamChannelPacketSize0, 2000);
+    SetReg((virtual_addr_t)MV_REG_StreamChannelPacketDelay0, 300);
     SetReg((virtual_addr_t)MV_REG_NumberofStreamChannels, 1);
 
 

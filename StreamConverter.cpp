@@ -74,17 +74,17 @@ int StreamConverter::Init()
     	 cout << "StreamConverter::Init() opendir (" << _strDirName << ") fail." << endl;
          return -1;
     }
-    do
-    {
-    	_FindFileData = readdir(_DIR);
-    	if(!_FindFileData) return -1;
-    	if(_FindFileData->d_type == DT_REG)
-    	{
-    		_strCurFileName = _strDirName+"/"+string(_FindFileData->d_name);
-    		break;
-    	}
-    }
-    while(true);
+//    do
+//    {
+//    	_FindFileData = readdir(_DIR);
+//    	if(!_FindFileData) return -1;
+//    	if(_FindFileData->d_type == DT_REG)
+//    	{
+//    		_strCurFileName = _strDirName+"/"+string(_FindFileData->d_name);
+//    		break;
+//    	}
+//    }
+//    while(true);
 
 
 
@@ -136,18 +136,22 @@ int StreamConverter::GetNextFrame(string& strFileName, PixelFormats OutFmt)
 //    }
 //    while (true);
 
-//    do
-//	{
-//		_FindFileData = readdir(_DIR);
+    do
+	{
+		_FindFileData = readdir(_DIR);
 //		if(!_FindFileData) return -1;
-//		if(_FindFileData->d_type == DT_REG)
-//		{
-//			_strCurFileName = _strDirName+"/"+string(_FindFileData->d_name);
-//			strFileName = _strCurFileName;
-//			break;
-//		}
-//	}
-//	while(true);
+		if(!_FindFileData)
+		{
+			_DIR = opendir((_strDirName).c_str());
+		}
+		else if(_FindFileData->d_type == DT_REG)
+		{
+			_strCurFileName = _strDirName+"/"+string(_FindFileData->d_name);
+			strFileName = _strCurFileName;
+			break;
+		}
+	}
+	while(true);
 
     _OutFmt = OutFmt;
     Lock();

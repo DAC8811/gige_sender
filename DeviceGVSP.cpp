@@ -118,8 +118,11 @@ ThreadReturnType MV_STDCALL DeviceGVSP::HandlingStreamPacket(void* Arg)
     pDeviceGvsp->_nBlockId = 1;
     do
     {
+    	uint32_t data=0;
+//    	pDeviceGvsp->_pDevice->GetMem( (unsigned char*)MV_REG_StreamChannelPort0, &data, 4);
+    	pDeviceGvsp->_pDevice->GetReg((unsigned char*)MV_REG_StreamChannelPort0, data);
         if (pDeviceGvsp->_pDevice->GetAcquisitionState() == 0
-            || pDeviceGvsp->_pDevice->GetControlChannelPrivilege() == 0)
+            || pDeviceGvsp->_pDevice->GetControlChannelPrivilege() == 0|| data == 0)
         {
             if (pStreamBuffer != NULL)
             {
@@ -132,6 +135,13 @@ ThreadReturnType MV_STDCALL DeviceGVSP::HandlingStreamPacket(void* Arg)
         }
         else
         {
+        	uint32_t nPacketSize = 0;
+        	uint32_t nPacketDelay = 0;
+        	pDeviceGvsp->_pDevice->GetReg((unsigned char*)MV_REG_StreamChannelPacketSize0, nPacketSize);
+        	pDeviceGvsp->_pDevice->GetReg((unsigned char*)MV_REG_StreamChannelPacketDelay0, nPacketDelay);
+        	pDeviceGvsp->_nPacketSize = (nPacketSize & 0xffff);
+        	cout<<pDeviceGvsp->_nPacketSize<<endl;
+        	pDeviceGvsp->_nPacketDelay = nPacketDelay;
 
             // Start trainsmitting data ......
             if ((nRet = pDeviceGvsp->Start()) != MV_OK || (pDeviceGvsp->_nPacketSize <= 0))
@@ -218,7 +228,7 @@ ThreadReturnType MV_STDCALL DeviceGVSP::HandlingStreamPacket(void* Arg)
 
                 // Waiting
                 // Sleep(pDeviceGvsp->_nPacketDelay);
-				 usleep(2*100);
+				 usleep(pDeviceGvsp->_nPacketDelay);
             }
             pDeviceGvsp->_pStrm->Unlock();
             // Exit StreamConverter buffer
