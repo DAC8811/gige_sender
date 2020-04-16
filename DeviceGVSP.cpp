@@ -260,6 +260,7 @@ ThreadReturnType MV_STDCALL DeviceGVSP::HandlingStreamPacket(void* Arg)
             {
                 pDeviceGvsp->_nBlockId = 1;
             }
+            //usleep(1000);
 
         }
     }
